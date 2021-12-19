@@ -1,0 +1,24 @@
+version: "3.8"
+  services:
+    go:
+      image: golang:1.17.5
+
+    nginx:
+      image: nginx:1.21.4
+      ports:
+        - 8881:80
+        - 4444:443
+      volumes:
+        type: bind
+        target:
+        source:
+
+    db:
+      image: mysql:8.0
+      ports:
+        - 3301:3306
+      volumes:
+        - db:/var/mysql/lib
+
+volume:
+  db:
