@@ -4,8 +4,7 @@ import "fmt"
 import "time"
 
 func main() {
-	go printNumbers1()
-	go printLetters1()
+	goPrint2()
 }
 
 func printNumbers1() {
