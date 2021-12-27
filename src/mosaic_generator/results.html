@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta httpequiv="ContentType" content="text/html;charset=utf8">
+        <title>Mosaic</title>
+    </head>
+    <body>
+        <div class='container'>
+            <div class="colmd6">
+                <img src="data:image/jpg;base64,{{.original}}" width="100%">
+                <div class="lead">Original</div>
+            </div>
+            <div class="colmd6">
+                <img src="data:image/jpg;base64,{{.mosaic}}" width="100%">
+                <div class="lead">Mosaic - {{.duration}}</div>
+            </div>
+            <div class="colmd12center">
+                <a class="btnbtnlgbtninfo" href="/">GoBack</a>
+            </div>
+        </div>
+        <br>
+    </body>
+</html>
