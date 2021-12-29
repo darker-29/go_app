@@ -7,13 +7,15 @@ import (
 	"io/ioutil"
 	"math"
 	"os"
+	"sync"
 )
 
-func main() {
-	fmt.Println("vim-go")
+type DB struct {
+	mutex *sync.Mutex
+	store map[string][3]float64
 }
 
-func averageColor(imgimage.Image) [3]float64 {
+func averageColor(img image.Image) [3]float64 {
 	bounds := img.Bounds()
 	r, g, b := 0.0, 0.0, 0.0
 
@@ -36,7 +38,7 @@ func resize(in image.Image, newWidth int) image.NRGBA {
 	for y, j := bounds.Min.Y, bounds.Min.Y; y < bounds.Max.Y; y, j = y+ratio, j+1 {
 		for x, i := bounds.Min.X, bounds.Min.X; x < bounds.Max.X; x, i = x+ratio, i+1 {
 			r, g, b, a := in.At(x, y).RGBA()
-			out.SetNRGBA(i, j, color.NRGBA{unit8(r >> 8), uint8(g >> 8), uint8(b >> 8), uint8(a >> 8)})
+			out.SetNRGBA(i, j, color.NRGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), uint8(a >> 8)})
 		}
 	}
 
@@ -56,7 +58,7 @@ func tilesDB() map[string][3]float64 {
 			img, _, err := image.Decode(file)
 
 			if err == nil {
-				db[name] = averaageColor(img)
+				db[name] = averageColor(img)
 			} else {
 				fmt.Println("error in populating TILEDB", err, name)
 			}
@@ -69,17 +71,19 @@ func tilesDB() map[string][3]float64 {
 	return db
 }
 
-func nearest(target [3]float64, db *map[string][3]float64) string {
+func (db *DB) nearest(target [3]float64) string {
 	var filename string
+	db.mutex.Lock()
 	smallest := 1000000.0
-	for k, v := range *db {
+	for k, v := range db.store {
 		dist := distance(target, v)
 		if dist < smallest {
 			filename, smallest = k, dist
 		}
 	}
 
-	delete(*db, filename)
+	delete(db.store, filename)
+	db.mutex.Unlock()
 	return filename
 }
 
@@ -93,10 +97,16 @@ func sq(n float64) float64 {
 
 var TILESDB map[string][3]float64
 
-func cloneTilesDB() map[string][3]float64 {
+func cloneTilesDB() DB {
 	db := make(map[string][3]float64)
 	for k, v := range TILESDB {
 		db[k] = v
 	}
-	return db
+
+	tiles := DB{
+		store: db,
+		mutex: &sync.Mutex{},
+	}
+
+	return tiles
 }
